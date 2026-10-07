@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Defs" targetNamespace="https://github.com/newcivetik/portfolio">
+<bpmn:collaboration id="Collab">
+<bpmn:participant id="Seller" name="Продавец" />
+<bpmn:participant id="Platform" name="Платформа SellWhy" processRef="Proc" />
+<bpmn:messageFlow id="m1" name="Заявка (бренд, контакты, тариф)" sourceRef="Seller" targetRef="P_start" />
+<bpmn:messageFlow id="m2" name="Запрос на доработку" sourceRef="T_rework" targetRef="Seller" />
+<bpmn:messageFlow id="m3" name="Исправленные данные" sourceRef="Seller" targetRef="C_fixed" />
+<bpmn:messageFlow id="m4" name="Отказ" sourceRef="T_reject" targetRef="Seller" />
+<bpmn:messageFlow id="m5" name="Доступ к магазину" sourceRef="T_access" targetRef="Seller" />
+</bpmn:collaboration>
+<bpmn:process id="Proc" name="Зарегистрировать продавца и создать магазин" isExecutable="false">
+<bpmn:laneSet id="LS">
+<bpmn:lane id="Lane_support" name="Поддержка">
+<bpmn:flowNodeRef>P_start</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>P_merge</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>T_check</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>G_check</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>T_rework</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>C_fixed</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>T_reject</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>E_reject</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="Lane_system" name="Система">
+<bpmn:flowNodeRef>T_activate</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>G_split</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>T_domain</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>T_qr</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>G_join</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>SP_setup</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>SP_pay</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>T_access</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>E_done</bpmn:flowNodeRef>
+</bpmn:lane>
+</bpmn:laneSet>
+<bpmn:startEvent id="P_start" name="Заявка получена"><bpmn:outgoing>f1</bpmn:outgoing><bpmn:messageEventDefinition id="P_start_md" /></bpmn:startEvent>
+<bpmn:exclusiveGateway id="P_merge" name=""><bpmn:incoming>f1</bpmn:incoming><bpmn:incoming>f6</bpmn:incoming><bpmn:outgoing>f2</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:userTask id="T_check" name="Проверить данные заявки"><bpmn:incoming>f2</bpmn:incoming><bpmn:outgoing>f3</bpmn:outgoing></bpmn:userTask>
+<bpmn:exclusiveGateway id="G_check" name="Результат проверки?"><bpmn:incoming>f3</bpmn:incoming><bpmn:outgoing>f4</bpmn:outgoing><bpmn:outgoing>f7</bpmn:outgoing><bpmn:outgoing>f9</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:sendTask id="T_rework" name="Запросить доработку"><bpmn:incoming>f4</bpmn:incoming><bpmn:outgoing>f5</bpmn:outgoing></bpmn:sendTask>
+<bpmn:intermediateCatchEvent id="C_fixed" name="Исправленные данные получены"><bpmn:incoming>f5</bpmn:incoming><bpmn:outgoing>f6</bpmn:outgoing><bpmn:messageEventDefinition id="C_fixed_md" /></bpmn:intermediateCatchEvent>
+<bpmn:sendTask id="T_reject" name="Сообщить об отказе"><bpmn:incoming>f7</bpmn:incoming><bpmn:outgoing>f8</bpmn:outgoing></bpmn:sendTask>
+<bpmn:endEvent id="E_reject" name="Заявка отклонена"><bpmn:incoming>f8</bpmn:incoming></bpmn:endEvent>
+<bpmn:serviceTask id="T_activate" name="Активировать магазин"><bpmn:incoming>f9</bpmn:incoming><bpmn:outgoing>f10</bpmn:outgoing></bpmn:serviceTask>
+<bpmn:parallelGateway id="G_split" name=""><bpmn:incoming>f10</bpmn:incoming><bpmn:outgoing>f11</bpmn:outgoing><bpmn:outgoing>f12</bpmn:outgoing></bpmn:parallelGateway>
+<bpmn:serviceTask id="T_domain" name="Создать поддомен"><bpmn:incoming>f11</bpmn:incoming><bpmn:outgoing>f13</bpmn:outgoing></bpmn:serviceTask>
+<bpmn:serviceTask id="T_qr" name="Сгенерировать QR-знаки"><bpmn:incoming>f12</bpmn:incoming><bpmn:outgoing>f14</bpmn:outgoing></bpmn:serviceTask>
+<bpmn:parallelGateway id="G_join" name=""><bpmn:incoming>f13</bpmn:incoming><bpmn:incoming>f14</bpmn:incoming><bpmn:outgoing>f15</bpmn:outgoing></bpmn:parallelGateway>
+<bpmn:subProcess id="SP_setup" name="Настроить магазин"><bpmn:incoming>f15</bpmn:incoming><bpmn:outgoing>f16</bpmn:outgoing></bpmn:subProcess>
+<bpmn:subProcess id="SP_pay" name="Подключить оплату и доставку"><bpmn:incoming>f16</bpmn:incoming><bpmn:outgoing>f17</bpmn:outgoing></bpmn:subProcess>
+<bpmn:sendTask id="T_access" name="Отправить продавцу доступ"><bpmn:incoming>f17</bpmn:incoming><bpmn:outgoing>f18</bpmn:outgoing></bpmn:sendTask>
+<bpmn:endEvent id="E_done" name="Магазин создан"><bpmn:incoming>f18</bpmn:incoming></bpmn:endEvent>
+<bpmn:sequenceFlow id="f1" sourceRef="P_start" targetRef="P_merge" />
+<bpmn:sequenceFlow id="f2" sourceRef="P_merge" targetRef="T_check" />
+<bpmn:sequenceFlow id="f3" sourceRef="T_check" targetRef="G_check" />
+<bpmn:sequenceFlow id="f4" name="нужна доработка" sourceRef="G_check" targetRef="T_rework" />
+<bpmn:sequenceFlow id="f5" sourceRef="T_rework" targetRef="C_fixed" />
+<bpmn:sequenceFlow id="f6" sourceRef="C_fixed" targetRef="P_merge" />
+<bpmn:sequenceFlow id="f7" name="отклонить" sourceRef="G_check" targetRef="T_reject" />
+<bpmn:sequenceFlow id="f8" sourceRef="T_reject" targetRef="E_reject" />
+<bpmn:sequenceFlow id="f9" name="корректны" sourceRef="G_check" targetRef="T_activate" />
+<bpmn:sequenceFlow id="f10" sourceRef="T_activate" targetRef="G_split" />
+<bpmn:sequenceFlow id="f11" sourceRef="G_split" targetRef="T_domain" />
+<bpmn:sequenceFlow id="f12" sourceRef="G_split" targetRef="T_qr" />
+<bpmn:sequenceFlow id="f13" sourceRef="T_domain" targetRef="G_join" />
+<bpmn:sequenceFlow id="f14" sourceRef="T_qr" targetRef="G_join" />
+<bpmn:sequenceFlow id="f15" sourceRef="G_join" targetRef="SP_setup" />
+<bpmn:sequenceFlow id="f16" sourceRef="SP_setup" targetRef="SP_pay" />
+<bpmn:sequenceFlow id="f17" sourceRef="SP_pay" targetRef="T_access" />
+<bpmn:sequenceFlow id="f18" sourceRef="T_access" targetRef="E_done" />
+</bpmn:process>
+<bpmndi:BPMNDiagram id="Diag"><bpmndi:BPMNPlane id="Plane" bpmnElement="Collab">
+<bpmndi:BPMNShape id="Seller_di" bpmnElement="Seller" isHorizontal="true"><dc:Bounds x="40" y="40" width="1440" height="80" /></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="Platform_di" bpmnElement="Platform" isHorizontal="true"><dc:Bounds x="40" y="170" width="1440" height="560" /></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="Lane_support_di" bpmnElement="Lane_support" isHorizontal="true"><dc:Bounds x="70" y="170" width="1410" height="300" /></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="Lane_system_di" bpmnElement="Lane_system" isHorizontal="true"><dc:Bounds x="70" y="470" width="1410" height="260" /></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="P_start_di" bpmnElement="P_start"><dc:Bounds x="100" y="342" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="70.0" y="384" width="96" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="P_merge_di" bpmnElement="P_merge" isMarkerVisible="true"><dc:Bounds x="170" y="335" width="50" height="50" /></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T_check_di" bpmnElement="T_check"><dc:Bounds x="250" y="320" width="120" height="80" /></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="G_check_di" bpmnElement="G_check" isMarkerVisible="true"><dc:Bounds x="410" y="335" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="446" y="388" width="96" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T_rework_di" bpmnElement="T_rework"><dc:Bounds x="480" y="225" width="120" height="70" /></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="C_fixed_di" bpmnElement="C_fixed"><dc:Bounds x="642" y="242" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="612" y="284" width="96" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T_reject_di" bpmnElement="T_reject"><dc:Bounds x="740" y="320" width="120" height="80" /></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="E_reject_di" bpmnElement="E_reject"><dc:Bounds x="920" y="342" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="890.0" y="384" width="96" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T_activate_di" bpmnElement="T_activate"><dc:Bounds x="375" y="560" width="120" height="80" /></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="G_split_di" bpmnElement="G_split"><dc:Bounds x="540" y="575" width="50" height="50" /></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T_domain_di" bpmnElement="T_domain"><dc:Bounds x="630" y="500" width="120" height="70" /></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T_qr_di" bpmnElement="T_qr"><dc:Bounds x="630" y="630" width="120" height="70" /></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="G_join_di" bpmnElement="G_join"><dc:Bounds x="790" y="575" width="50" height="50" /></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="SP_setup_di" bpmnElement="SP_setup" isExpanded="false"><dc:Bounds x="880" y="560" width="120" height="80" /></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="SP_pay_di" bpmnElement="SP_pay" isExpanded="false"><dc:Bounds x="1040" y="560" width="130" height="80" /></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T_access_di" bpmnElement="T_access"><dc:Bounds x="1210" y="560" width="120" height="80" /></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="E_done_di" bpmnElement="E_done"><dc:Bounds x="1380" y="582" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1350.0" y="624" width="96" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+<bpmndi:BPMNEdge id="f1_di" bpmnElement="f1"><di:waypoint x="136" y="360.0" /><di:waypoint x="170" y="360.0" /></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f2_di" bpmnElement="f2"><di:waypoint x="220" y="360.0" /><di:waypoint x="250" y="360.0" /></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f3_di" bpmnElement="f3"><di:waypoint x="370" y="360.0" /><di:waypoint x="410" y="360.0" /></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f4_di" bpmnElement="f4"><di:waypoint x="435.0" y="335" /><di:waypoint x="435" y="260" /><di:waypoint x="480" y="260.0" /><bpmndi:BPMNLabel><dc:Bounds x="330" y="296" width="100" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f5_di" bpmnElement="f5"><di:waypoint x="600" y="260.0" /><di:waypoint x="642" y="260.0" /></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f6_di" bpmnElement="f6"><di:waypoint x="678" y="260.0" /><di:waypoint x="705" y="260" /><di:waypoint x="705" y="200" /><di:waypoint x="195" y="200" /><di:waypoint x="195.0" y="335" /></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f7_di" bpmnElement="f7"><di:waypoint x="460" y="360.0" /><di:waypoint x="740" y="360.0" /><bpmndi:BPMNLabel><dc:Bounds x="630" y="336" width="80" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f8_di" bpmnElement="f8"><di:waypoint x="860" y="360.0" /><di:waypoint x="920" y="360.0" /></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f9_di" bpmnElement="f9"><di:waypoint x="435.0" y="385" /><di:waypoint x="435.0" y="560" /><bpmndi:BPMNLabel><dc:Bounds x="443" y="430" width="70" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f10_di" bpmnElement="f10"><di:waypoint x="495" y="600.0" /><di:waypoint x="540" y="600.0" /></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f11_di" bpmnElement="f11"><di:waypoint x="565.0" y="575" /><di:waypoint x="565" y="535" /><di:waypoint x="630" y="535.0" /></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f12_di" bpmnElement="f12"><di:waypoint x="565.0" y="625" /><di:waypoint x="565" y="665" /><di:waypoint x="630" y="665.0" /></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f13_di" bpmnElement="f13"><di:waypoint x="750" y="535.0" /><di:waypoint x="815" y="535" /><di:waypoint x="815.0" y="575" /></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f14_di" bpmnElement="f14"><di:waypoint x="750" y="665.0" /><di:waypoint x="815" y="665" /><di:waypoint x="815.0" y="625" /></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f15_di" bpmnElement="f15"><di:waypoint x="840" y="600.0" /><di:waypoint x="880" y="600.0" /></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f16_di" bpmnElement="f16"><di:waypoint x="1000" y="600.0" /><di:waypoint x="1040" y="600.0" /></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f17_di" bpmnElement="f17"><di:waypoint x="1170" y="600.0" /><di:waypoint x="1210" y="600.0" /></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f18_di" bpmnElement="f18"><di:waypoint x="1330" y="600.0" /><di:waypoint x="1380" y="600.0" /></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="m1_di" bpmnElement="m1"><di:waypoint x="118" y="120" /><di:waypoint x="118.0" y="342" /><bpmndi:BPMNLabel><dc:Bounds x="126" y="128" width="120" height="28" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="m2_di" bpmnElement="m2"><di:waypoint x="540.0" y="225" /><di:waypoint x="540" y="120" /><bpmndi:BPMNLabel><dc:Bounds x="460" y="128" width="74" height="28" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="m3_di" bpmnElement="m3"><di:waypoint x="660" y="120" /><di:waypoint x="660.0" y="242" /><bpmndi:BPMNLabel><dc:Bounds x="668" y="128" width="74" height="28" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="m4_di" bpmnElement="m4"><di:waypoint x="800.0" y="320" /><di:waypoint x="800" y="120" /><bpmndi:BPMNLabel><dc:Bounds x="808" y="135" width="50" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="m5_di" bpmnElement="m5"><di:waypoint x="1270.0" y="560" /><di:waypoint x="1270" y="120" /><bpmndi:BPMNLabel><dc:Bounds x="1278" y="128" width="70" height="28" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+</bpmndi:BPMNPlane></bpmndi:BPMNDiagram></bpmn:definitions>
