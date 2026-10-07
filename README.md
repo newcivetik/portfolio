@@ -41,4 +41,5 @@ SellWhy — SaaS-конструктор интернет-магазинов од
 
 ## Контакты
 
-GitHub: [@newcivetik](https://github.com/newcivetik)
+- Telegram: [@civetik](https://t.me/civetik)
+- GitHub: [@newcivetik](https://github.com/newcivetik)
